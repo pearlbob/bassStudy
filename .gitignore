@@ -70,3 +70,5 @@ gradlew.bat
 key.properties
 *.aab
 utcDate.txt
+android
+ios
