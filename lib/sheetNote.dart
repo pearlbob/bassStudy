@@ -5,6 +5,9 @@ import 'package:bsteeleMusicLib/songs/chord.dart';
 
 import 'SheetMusic.dart';
 
+const double staffGaps = 4;   //  always!
+const double staffMargin = 3;
+
 //final String noteheadBlack = '\uE0A4';
 //final String stem = '\uE210';
 //final String repeat1Bar = '\uE500';
@@ -29,6 +32,9 @@ class SheetNoteSymbol {
   get bounds => _bounds;
   Rect _bounds;
 
+  get isUp => _isUp;
+  bool _isUp = true;
+
   get focusPoint => _focusPoint;
   Point<double> _focusPoint = Point(0, 0);
 
@@ -42,19 +48,20 @@ final SheetNoteSymbol noteWhole =
 final SheetNoteSymbol noteHalfUp =
     SheetNoteSymbol.glyphBBoxes('noteHalfUp', '\uE1D3', GlyphBBoxesNoteHalfUp.bBoxNE, GlyphBBoxesNoteHalfUp.bBoxSW);
 final SheetNoteSymbol noteHalfDown = SheetNoteSymbol.glyphBBoxes(
-    'noteHalfDown', '\uE1D4', GlyphBBoxesNoteHalfDown.bBoxNE, GlyphBBoxesNoteHalfDown.bBoxSW);
+    'noteHalfDown', '\uE1D4', GlyphBBoxesNoteHalfDown.bBoxNE, GlyphBBoxesNoteHalfDown.bBoxSW).._isUp = false;
 final SheetNoteSymbol noteQuarterUp = SheetNoteSymbol.glyphBBoxes(
     'noteQuarterUp', '\uE1D5', GlyphBBoxesNoteQuarterUp.bBoxNE, GlyphBBoxesNoteQuarterUp.bBoxSW);
 final SheetNoteSymbol noteQuarterDown = SheetNoteSymbol.glyphBBoxes(
-    'noteQuarterDown', '\uE1D6', GlyphBBoxesNoteQuarterDown.bBoxNE, GlyphBBoxesNoteQuarterDown.bBoxSW);
+    'noteQuarterDown', '\uE1D6', GlyphBBoxesNoteQuarterDown.bBoxNE, GlyphBBoxesNoteQuarterDown.bBoxSW).._isUp = false;
 final SheetNoteSymbol note8thUp =
     SheetNoteSymbol.glyphBBoxes('note8thUp', '\uE1D7', GlyphBBoxesNote8thUp.bBoxNE, GlyphBBoxesNote8thUp.bBoxSW);
 final SheetNoteSymbol note8thDown =
-    SheetNoteSymbol.glyphBBoxes('note8thDown', '\uE1D8', GlyphBBoxesNote8thDown.bBoxNE, GlyphBBoxesNote8thDown.bBoxSW);
+    SheetNoteSymbol.glyphBBoxes('note8thDown', '\uE1D8', GlyphBBoxesNote8thDown.bBoxNE, GlyphBBoxesNote8thDown.bBoxSW)
+      .._isUp = false;
 final SheetNoteSymbol note16thUp =
     SheetNoteSymbol.glyphBBoxes('note16thUp', '\uE1D9', GlyphBBoxesNote16thUp.bBoxNE, GlyphBBoxesNote16thUp.bBoxSW);
 final SheetNoteSymbol note16thDown = SheetNoteSymbol.glyphBBoxes(
-    'note16thDown', '\uE1DA', GlyphBBoxesNote16thDown.bBoxNE, GlyphBBoxesNote16thDown.bBoxSW);
+    'note16thDown', '\uE1DA', GlyphBBoxesNote16thDown.bBoxNE, GlyphBBoxesNote16thDown.bBoxSW).._isUp = false;
 
 //  rests
 final SheetNoteSymbol restWhole =
@@ -71,7 +78,7 @@ final SheetNoteSymbol rest16th =
 //  markers
 final SheetNoteSymbol brace =
     SheetNoteSymbol.glyphBBoxes('brace', '\uE000', GlyphBBoxesBrace.bBoxNE, GlyphBBoxesBrace.bBoxSW)
-      .._fontSizeStaffs = 12;
+      .._fontSizeStaffs = 2*4+2*staffMargin;
 final SheetNoteSymbol barlineSingle = SheetNoteSymbol.glyphBBoxes(
     'barlineSingle', '\uE030', GlyphBBoxesBarlineSingle.bBoxNE, GlyphBBoxesBarlineSingle.bBoxSW);
 final SheetNoteSymbol trebleClef //  i.e. gClef
@@ -88,6 +95,9 @@ final SheetNoteSymbol accidentalNatural = SheetNoteSymbol.glyphBBoxes(
     'accidentalNatural', '\uE261', GlyphBBoxesAccidentalNatural.bBoxNE, GlyphBBoxesAccidentalNatural.bBoxSW);
 final SheetNoteSymbol accidentalSharp = SheetNoteSymbol.glyphBBoxes(
     'accidentalSharp', '\uE262', GlyphBBoxesAccidentalSharp.bBoxNE, GlyphBBoxesAccidentalSharp.bBoxSW);
+final SheetNoteSymbol augmentationDot = SheetNoteSymbol.glyphBBoxes(
+    'augmentationDot', '\uE1E7', GlyphBBoxesAugmentationDot.bBoxNE, GlyphBBoxesAugmentationDot.bBoxSW);
+
 
 //  time signatures
 final SheetNoteSymbol timeSig0 =
@@ -140,4 +150,5 @@ class SheetNote {
   int line;
   int m; //  ????
 
+  SheetNoteSymbol symbol;
 }

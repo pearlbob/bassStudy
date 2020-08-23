@@ -133,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-const double staffSpace = 19;
+const double staffSpace = 30;
 
 class _PlotPainter extends CustomPainter {
   @override
@@ -142,14 +142,14 @@ class _PlotPainter extends CustomPainter {
     //  clear the plot
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), _white);
 
-    double staffGap = 3;
     _staffLineThickness = EngravingDefaults.staffLineThickness / 2; //  style basis only
-    _yOff = 3 * staffSpace;
-    _yOffTreble = _yOff;
-    _yOffBass = _yOff + (5 + staffGap) * staffSpace;
+    _yOff = 2 * staffSpace;
+    _yOffTreble = _yOff + staffMargin * staffSpace;
+    _yOffBass = _yOffTreble + (staffGaps + 2 * staffMargin) * staffSpace;
     _xOff = 10;
 
-    _xOff += renderSheetNoteSymbol(brace, 12);
+    _yOff = _yOffTreble;
+    _xOff += renderSheetNoteSymbol(brace, 2 * staffGaps + 2 * staffMargin);
     _xOff += 1.5 * staffSpace;
 
     staff(size.width - _xOff - 10, _yOffTreble);
@@ -162,44 +162,30 @@ class _PlotPainter extends CustomPainter {
     _xOff += 0.5 * staffSpace;
 
     {
-      _yOff =_yOffTreble;
-      double width = renderSheetFixedYSymbol(trebleClef );
-      _yOff =_yOffBass;
+      _yOff = _yOffTreble;
+      double width = renderSheetFixedYSymbol(trebleClef);
+      _yOff = _yOffBass;
       _xOff += max(width, renderSheetFixedYSymbol(bassClef));
     }
     _xOff += 1 * staffSpace;
 
-    double staffPosition = 3.5;
-
-
     _yOff = _yOffTreble;
     renderSheetNoteSymbol(accidentalSharp, 0);
     _yOff = _yOffBass;
-    _xOff += renderSheetNoteSymbol(accidentalSharp,  1);
+    _xOff += renderSheetNoteSymbol(accidentalSharp, 1);
 
     _xOff += 1 * staffSpace;
     _yOff = _yOffBass;
-    renderSheetNoteSymbol(timeSig4, staffPosition - 0.5);
-    renderSheetNoteSymbol(timeSig4, staffPosition - 2.5);
+
+    double staffPosition = staffGaps;
+    renderSheetNoteSymbol(timeSig4, staffPosition - 3);
+    renderSheetNoteSymbol(timeSig4, staffPosition - 1);
 
     _yOff = _yOffTreble;
     renderSheetNoteSymbol(timeSigCommon, 2);
     _yOff = _yOffBass;
 
     _xOff += 3 * staffSpace;
-
-//    canvas.drawRect(
-//        Rect.fromLTRB(
-//            _xOff + (GlyphBBoxesNoteheadBlack.bBoxNE.x - EngravingDefaults.stemThickness / 2) * staffSpace,
-//            _yOff + (staffPosition - GlyphBBoxesStem.bBoxNE.y - EngravingDefaults.stemThickness) * staffSpace,
-//            _xOff + (GlyphBBoxesNoteheadBlack.bBoxNE.x - EngravingDefaults.stemThickness / 2 + 2) * staffSpace,
-//            _yOff +
-//                (staffPosition -
-//                        GlyphBBoxesStem.bBoxNE.y -
-//                        EngravingDefaults.stemThickness +
-//                        EngravingDefaults.beamThickness) *
-//                    staffSpace),
-//        _blackFill);
 
     {
       double minX = _xOff + (noteQuarterUp.bounds.right - EngravingDefaults.stemThickness) * staffSpace;
@@ -230,17 +216,8 @@ class _PlotPainter extends CustomPainter {
 
     staffPosition = 0.0;
 
-//    noteHead(noteheadBlack, GlyphBBoxesNoteheadBlack.bBoxSW.x, staffPosition);
-//    noteHead(stem, GlyphBBoxesNoteheadBlack.bBoxSW.x + EngravingDefaults.stemThickness / 2,
-//        staffPosition + GlyphBBoxesStem.bBoxNE.y + EngravingDefaults.stemThickness);
-//    _xOff += (GlyphBBoxesNoteheadBlack.bBoxNE.x - GlyphBBoxesNoteheadBlack.bBoxSW.x + 0.25) * staffSpace;
-
-    {
-      double width = renderSheetNoteSymbol(noteQuarterDown, staffPosition - 1.5);
-      stave(_xOff - 0.5 * staffSpace, _xOff + 1.5 * staffSpace, _yOff - 1 * staffSpace);
-      _xOff += width;
-      _xOff += 1 * staffSpace;
-    }
+    _xOff += renderSheetNoteSymbol(noteQuarterDown, staffPosition - 1.5);
+    _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(noteHalfDown, staffPosition + 1);
     _xOff += 1 * staffSpace;
@@ -252,11 +229,9 @@ class _PlotPainter extends CustomPainter {
     _xOff += 1 * staffSpace;
     _xOff += renderSheetNoteSymbol(barlineSingle, 4);
     _xOff += 1 * staffSpace;
-    {
-      double width = renderSheetNoteSymbol(noteWhole, staffPosition + 5);
-      stave(_xOff - 0.5 * staffSpace, _xOff + 2.5 * staffSpace, _yOff + 5 * staffSpace);
-      _xOff += width;
-    }
+
+    _xOff += renderSheetNoteSymbol(noteWhole, staffPosition + 5);
+
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(barlineSingle, 4);
@@ -265,8 +240,11 @@ class _PlotPainter extends CustomPainter {
     _xOff += renderSheetNoteSymbol(noteHalfUp, staffPosition + 2.5);
     _xOff += 1 * staffSpace;
     _xOff += renderSheetNoteSymbol(noteQuarterUp, staffPosition + 2);
+    _xOff += 0.25 * staffSpace;
+    _xOff += renderSheetNoteSymbol(augmentationDot, staffPosition + 2);
+
     _xOff += 1 * staffSpace;
-    _xOff += renderSheetNoteSymbol(noteQuarterDown, staffPosition);
+    _xOff += renderSheetNoteSymbol(note8thDown, staffPosition);
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(barlineSingle, 4);
@@ -323,12 +301,30 @@ class _PlotPainter extends CustomPainter {
     }
   }
 
-  void stave(double x1, double x2, double y) {
+  void stave(SheetNoteSymbol symbol, double staffPosition) {
+    //  truncate to staff line height
+    staffPosition = staffPosition.toInt().toDouble();
+
+    if (staffPosition >= 0 && staffPosition <= staffGaps) {
+      return;
+    }
+
     final black = Paint();
     black.color = Colors.black;
     black.style = PaintingStyle.stroke;
     black.strokeWidth = _staffLineThickness * staffSpace;
-    _canvas.drawLine(Offset(x1, y), Offset(x2, y), black);
+
+    while (staffPosition < 0) {
+      _canvas.drawLine(Offset(_xOff + (symbol.bounds.left - 0.5) * staffSpace, _yOff + staffPosition * staffSpace),
+          Offset(_xOff + (symbol.bounds.right + 0.5) * staffSpace, _yOff + staffPosition * staffSpace), black);
+      staffPosition++;
+    }
+
+    while (staffPosition > staffGaps) {
+      _canvas.drawLine(Offset(_xOff + (symbol.bounds.left - 0.5) * staffSpace, _yOff + staffPosition * staffSpace),
+          Offset(_xOff + (symbol.bounds.right + 0.5) * staffSpace, _yOff + staffPosition * staffSpace), black);
+      staffPosition--;
+    }
   }
 
   double renderSheetFixedYSymbol(SheetNoteSymbol symbol) {
@@ -363,6 +359,9 @@ class _PlotPainter extends CustomPainter {
         maxWidth: w,
       )
       ..paint(_canvas, Offset(_xOff + symbol.bounds.left, (_yOff ?? 0) + -2 * w + (staffPosition - 0.05) * staffSpace));
+
+    stave(symbol, staffPosition);
+
     return symbol.bounds.width * staffSpace;
   }
 
