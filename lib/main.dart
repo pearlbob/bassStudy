@@ -133,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-const double staffSpace = 30;
+const double staffSpace = 60;
 
 class _PlotPainter extends CustomPainter {
   @override
@@ -149,7 +149,7 @@ class _PlotPainter extends CustomPainter {
     _xOff = 10;
 
     _yOff = _yOffTreble;
-    _xOff += renderSheetNoteSymbol(brace, 2 * staffGaps + 2 * staffMargin);
+    _xOff += renderSheetFixedYSymbol(brace);
     _xOff += 1.5 * staffSpace;
 
     staff(size.width - _xOff - 10, _yOffTreble);
@@ -328,10 +328,10 @@ class _PlotPainter extends CustomPainter {
   }
 
   double renderSheetFixedYSymbol(SheetNoteSymbol symbol) {
-    return renderSheetNoteSymbol(symbol, symbol.restYOff);
+    return renderSheetNoteSymbol(symbol, symbol.fixedYOff, isStave: false);
   }
 
-  double renderSheetNoteSymbol(SheetNoteSymbol symbol, double staffPosition) {
+  double renderSheetNoteSymbol(SheetNoteSymbol symbol, double staffPosition, {bool isStave: true}) {
     double w = symbol.fontSizeStaffs * staffSpace;
 
     if (_debug)
@@ -360,7 +360,9 @@ class _PlotPainter extends CustomPainter {
       )
       ..paint(_canvas, Offset(_xOff + symbol.bounds.left, (_yOff ?? 0) + -2 * w + (staffPosition - 0.05) * staffSpace));
 
-    stave(symbol, staffPosition);
+    if (isStave) {
+      stave(symbol, staffPosition);
+    }
 
     return symbol.bounds.width * staffSpace;
   }
