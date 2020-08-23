@@ -4,7 +4,6 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:bassStudy/sheetNote.dart';
-import 'package:bsteeleMusicLib/songs/musicConstants.dart';
 import 'package:bsteeleMusicLib/util/util.dart';
 import 'package:flutter/material.dart';
 
@@ -162,23 +161,29 @@ class _PlotPainter extends CustomPainter {
 
     _xOff += 0.5 * staffSpace;
 
-    _xOff += max(trebleClef(canvas, _xOff, _yOffTreble), bassClef(canvas, _xOff, _yOffBass));
-    _xOff += 0.5 * staffSpace;
+    {
+      _yOff =_yOffTreble;
+      double width = renderSheetFixedYSymbol(trebleClef );
+      _yOff =_yOffBass;
+      _xOff += max(width, renderSheetFixedYSymbol(bassClef));
+    }
+    _xOff += 1 * staffSpace;
 
     double staffPosition = 3.5;
 
-    _yOff = _yOffBass;
-    noteHead(accidentalSharp, 0, 1);
+
     _yOff = _yOffTreble;
-    noteHead(accidentalSharp, 0, 0);
+    renderSheetNoteSymbol(accidentalSharp, 0);
+    _yOff = _yOffBass;
+    _xOff += renderSheetNoteSymbol(accidentalSharp,  1);
 
     _xOff += 1 * staffSpace;
     _yOff = _yOffBass;
-    noteHead(timeSig4, 0, staffPosition - 0.5);
-    noteHead(timeSig4, 0, staffPosition - 2.5);
+    renderSheetNoteSymbol(timeSig4, staffPosition - 0.5);
+    renderSheetNoteSymbol(timeSig4, staffPosition - 2.5);
 
     _yOff = _yOffTreble;
-    noteHead(timeSigCommon, 0, 2);
+    renderSheetNoteSymbol(timeSigCommon, 2);
     _yOff = _yOffBass;
 
     _xOff += 3 * staffSpace;
@@ -267,7 +272,7 @@ class _PlotPainter extends CustomPainter {
     _xOff += renderSheetNoteSymbol(barlineSingle, 4);
     _xOff += 1 * staffSpace;
 
-    _xOff += renderSheetRestSymbol(restQuarter);
+    _xOff += renderSheetFixedYSymbol(restQuarter);
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(note8thUp, staffPosition + 3);
@@ -281,21 +286,21 @@ class _PlotPainter extends CustomPainter {
     _xOff += renderSheetNoteSymbol(barlineSingle, 4);
     _xOff += 1 * staffSpace;
 
-    _xOff += renderSheetRestSymbol(restWhole);
+    _xOff += renderSheetFixedYSymbol(restWhole);
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(barlineSingle, 4);
     _xOff += 1 * staffSpace;
 
-    _xOff += renderSheetRestSymbol(restHalf);
+    _xOff += renderSheetFixedYSymbol(restHalf);
     _xOff += 1 * staffSpace;
-    _xOff += renderSheetRestSymbol(restQuarter);
+    _xOff += renderSheetFixedYSymbol(restQuarter);
     _xOff += 1 * staffSpace;
-    _xOff += renderSheetRestSymbol(rest8th);
+    _xOff += renderSheetFixedYSymbol(rest8th);
     _xOff += 1 * staffSpace;
-    _xOff += renderSheetRestSymbol(rest16th);
+    _xOff += renderSheetFixedYSymbol(rest16th);
     _xOff += 1 * staffSpace;
-    _xOff += renderSheetRestSymbol(rest16th);
+    _xOff += renderSheetFixedYSymbol(rest16th);
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(barlineSingle, 4);
@@ -326,71 +331,7 @@ class _PlotPainter extends CustomPainter {
     _canvas.drawLine(Offset(x1, y), Offset(x2, y), black);
   }
 
-  double trebleClef(Canvas canvas, final double x, final double yOff) {
-    TextPainter(
-      text: TextSpan(
-        text: MusicConstants.trebleClef,
-        style: TextStyle(
-          fontFamily: 'Bravura',
-          color: _black.color,
-          fontSize: 4 * staffSpace,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )
-      ..layout(
-        minWidth: 0,
-        maxWidth: (GlyphBBoxesGClef.bBoxNE.x - GlyphBBoxesGClef.bBoxSW.x) * staffSpace,
-      )
-      ..paint(canvas, Offset(x, -2 * staffSpace));
-
-    return GlyphBBoxesGClef.bBoxNE.x * staffSpace;
-  }
-
-  double bassClef(Canvas canvas, final double xOff, final double yOff) {
-    final double fontSize = 4 * staffSpace;
-
-    TextPainter(
-      text: TextSpan(
-        text: MusicConstants.bassClef,
-        style: TextStyle(
-          fontFamily: 'Bravura',
-          color: _black.color,
-          fontSize: fontSize,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )
-      ..layout(
-        minWidth: 0,
-        maxWidth: fontSize,
-      )
-      ..paint(canvas, Offset(xOff, yOff - 2 * fontSize + GlyphBBoxesFClef.bBoxNE.y * staffSpace));
-
-    return GlyphBBoxesFClef.bBoxNE.x * staffSpace;
-  }
-
-  void noteHead(final String text, double x, double staffPosition, {fontsize: 4 * staffSpace}) {
-    double w = fontsize;
-    TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(
-          fontFamily: 'Bravura',
-          color: _black.color,
-          fontSize: w,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )
-      ..layout(
-        minWidth: 0,
-        maxWidth: w,
-      )
-      ..paint(_canvas, Offset(_xOff + x * staffSpace, (_yOff ?? 0) + -2 * w + (staffPosition - 0.05) * staffSpace));
-  }
-
-  double renderSheetRestSymbol(SheetNoteSymbol symbol) {
+  double renderSheetFixedYSymbol(SheetNoteSymbol symbol) {
     return renderSheetNoteSymbol(symbol, symbol.restYOff);
   }
 
