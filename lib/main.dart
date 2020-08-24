@@ -7,7 +7,7 @@ import 'package:bassStudy/sheetNote.dart';
 import 'package:bsteeleMusicLib/util/util.dart';
 import 'package:flutter/material.dart';
 
-import 'SheetMusic.dart';
+import 'sheetMusicFontParameters.dart';
 
 const bool _debug = false; //  true false
 
@@ -133,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-const double staffSpace = 60;
+const double staffSpace = 25;
 
 class _PlotPainter extends CustomPainter {
   @override
@@ -142,7 +142,6 @@ class _PlotPainter extends CustomPainter {
     //  clear the plot
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), _white);
 
-    _staffLineThickness = EngravingDefaults.staffLineThickness / 2; //  style basis only
     _yOff = 2 * staffSpace;
     _yOffTreble = _yOff + staffMargin * staffSpace;
     _yOffBass = _yOffTreble + (staffGaps + 2 * staffMargin) * staffSpace;
@@ -153,11 +152,10 @@ class _PlotPainter extends CustomPainter {
     _xOff += 1.5 * staffSpace;
 
     staff(size.width - _xOff - 10, _yOffTreble);
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
 
     _yOff = _yOffBass;
     staff(size.width - _xOff - 10, _yOffBass);
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
+    _xOff += renderBarlineSingle();
 
     _xOff += 0.5 * staffSpace;
 
@@ -187,7 +185,70 @@ class _PlotPainter extends CustomPainter {
 
     _xOff += 3 * staffSpace;
 
+    double xOffBass = _xOff;
+    double xOffTreble = _xOff;
+
+    //  treble note samples
+    _yOff = _yOffTreble;
+
+    //  beat 1
+    renderSheetNoteSymbol(noteQuarterUp, 4);
+    renderSheetNoteSymbol(noteQuarterUp, 3);
+    _xOff += renderSheetNoteSymbol(noteQuarterUp, 2);
+    _xOff += 3 * staffSpace;
+
+    //  beat 2
     {
+      double firstChordRoot = 2;
+      double secondChordRoot = 2.5;
+
+      //  barred note sample
+      double firstX = _xOff + (noteQuarterUp.bounds.right - EngravingDefaults.stemThickness) * staffSpace;
+      double secondX = _xOff + (noteQuarterUp.bounds.width + 1 + noteQuarterUp.bounds.right) * staffSpace;
+      double firstY = _yOff + (firstChordRoot - GlyphBBoxesStem.bBoxNE.y) * staffSpace;
+      double secondY = _yOff + (secondChordRoot - GlyphBBoxesStem.bBoxNE.y) * staffSpace;
+
+      Path path = Path();
+      path.moveTo(firstX, firstY);
+      path.lineTo(firstX, firstY+EngravingDefaults.beamThickness* staffSpace);
+      path.lineTo(secondX, secondY+EngravingDefaults.beamThickness* staffSpace);
+      path.lineTo(secondX, secondY);
+      path.lineTo(firstX, firstY);
+
+      canvas.drawPath(path, _blackFill);
+
+      renderSheetNoteSymbol(noteQuarterUp, firstChordRoot+2);
+      renderSheetNoteSymbol(noteQuarterUp, firstChordRoot+1);
+      _xOff += renderSheetNoteSymbol(noteQuarterUp, firstChordRoot);
+      _xOff += 1 * staffSpace;
+
+      renderSheetNoteSymbol(noteQuarterUp, secondChordRoot+2);
+      renderSheetNoteSymbol(noteQuarterUp, secondChordRoot+1);
+      _xOff += renderSheetNoteSymbol(noteQuarterUp, secondChordRoot);
+      _xOff += 3 * staffSpace;
+    }
+
+    //  beat 3
+    renderSheetNoteSymbol(noteQuarterUp, 4.5);
+    renderSheetNoteSymbol(noteQuarterUp, 3.5);
+    _xOff += renderSheetNoteSymbol(note8thUp, 2.5);
+    _xOff += 1 * staffSpace;
+
+    _xOff += renderSheetFixedYSymbol(rest8th);
+    _xOff += 3 * staffSpace;
+
+    //  beat 4
+    _xOff += renderSheetFixedYSymbol(restQuarter);
+    _xOff += 3 * staffSpace;
+
+    xOffTreble = _xOff;
+
+    //  bass note samples
+    _xOff = xOffBass;
+    _yOff = _yOffBass;
+
+    {
+      //  barred note sample
       double minX = _xOff + (noteQuarterUp.bounds.right - EngravingDefaults.stemThickness) * staffSpace;
       double maxX = _xOff + (noteQuarterUp.bounds.width + 1 + noteQuarterUp.bounds.right) * staffSpace;
       double minY = _yOff + (staffPosition - GlyphBBoxesStem.bBoxNE.y - EngravingDefaults.stemThickness) * staffSpace;
@@ -222,19 +283,21 @@ class _PlotPainter extends CustomPainter {
     _xOff += renderSheetNoteSymbol(noteHalfDown, staffPosition + 1);
     _xOff += 1 * staffSpace;
 
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
+    _xOff = max(_xOff, xOffTreble);
+
+    _xOff += renderBarlineSingle();
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(noteWhole, staffPosition + 4);
     _xOff += 1 * staffSpace;
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
+    _xOff += renderBarlineSingle();
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(noteWhole, staffPosition + 5);
 
     _xOff += 1 * staffSpace;
 
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
+    _xOff += renderBarlineSingle();
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetNoteSymbol(noteHalfUp, staffPosition + 2.5);
@@ -247,7 +310,7 @@ class _PlotPainter extends CustomPainter {
     _xOff += renderSheetNoteSymbol(note8thDown, staffPosition);
     _xOff += 1 * staffSpace;
 
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
+    _xOff += renderBarlineSingle();
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetFixedYSymbol(restQuarter);
@@ -261,13 +324,20 @@ class _PlotPainter extends CustomPainter {
     _xOff += 1 * staffSpace;
     _xOff += renderSheetNoteSymbol(note16thDown, staffPosition);
     _xOff += 1 * staffSpace;
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
+
+    _xOff += renderSheetFixedYSymbol(rest8th);
+    _xOff += 2 * staffSpace;
+
+    //  beat 4
+    _xOff += renderSheetFixedYSymbol(restQuarter);
+    _xOff += 2 * staffSpace;
+    _xOff += renderBarlineSingle();
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetFixedYSymbol(restWhole);
     _xOff += 1 * staffSpace;
 
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
+    _xOff += renderBarlineSingle();
     _xOff += 1 * staffSpace;
 
     _xOff += renderSheetFixedYSymbol(restHalf);
@@ -281,7 +351,7 @@ class _PlotPainter extends CustomPainter {
     _xOff += renderSheetFixedYSymbol(rest16th);
     _xOff += 1 * staffSpace;
 
-    _xOff += renderSheetNoteSymbol(barlineSingle, 4);
+    _xOff += renderBarlineSingle();
     _xOff += 1 * staffSpace;
   }
 
@@ -327,6 +397,17 @@ class _PlotPainter extends CustomPainter {
     }
   }
 
+  double renderBarlineSingle() {
+    final black = Paint();
+    black.color = Colors.black;
+    black.style = PaintingStyle.stroke;
+    final width = (GlyphBBoxesBarlineSingle.bBoxNE.x - GlyphBBoxesBarlineSingle.bBoxSW.x) * staffSpace;
+    black.strokeWidth = width;
+    _canvas.drawLine(Offset(_xOff, _yOffTreble), Offset(_xOff, _yOffBass + staffGaps * staffSpace), black);
+
+    return width;
+  }
+
   double renderSheetFixedYSymbol(SheetNoteSymbol symbol) {
     return renderSheetNoteSymbol(symbol, symbol.fixedYOff, isStave: false);
   }
@@ -368,7 +449,7 @@ class _PlotPainter extends CustomPainter {
   }
 
   Canvas _canvas;
-  double _staffLineThickness;
+  final double _staffLineThickness = EngravingDefaults.staffLineThickness / 2; //  style basis only
   double _xOff;
   double _yOff;
   double _yOffTreble;

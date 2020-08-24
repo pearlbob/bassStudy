@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:bsteeleMusicLib/songs/chord.dart';
 
-import 'SheetMusic.dart';
+import 'sheetMusicFontParameters.dart';
 
 const double staffGaps = 4; //  always!
 const double staffMargin = 3;
@@ -82,8 +82,8 @@ final SheetNoteSymbol rest16th =
 final SheetNoteSymbol brace = SheetNoteSymbol.glyphBBoxesFixed(
     'brace', '\uE000', GlyphBBoxesBrace.bBoxNE, GlyphBBoxesBrace.bBoxSW, 2 * 4 + 2 * staffMargin)
   .._fontSizeStaffs = 2 * 4 + 2 * staffMargin;
-final SheetNoteSymbol barlineSingle = SheetNoteSymbol.glyphBBoxes(
-    'barlineSingle', '\uE030', GlyphBBoxesBarlineSingle.bBoxNE, GlyphBBoxesBarlineSingle.bBoxSW);
+//final SheetNoteSymbol barlineSingle = SheetNoteSymbol.glyphBBoxes(
+//    'barlineSingle', '\uE030', GlyphBBoxesBarlineSingle.bBoxNE, GlyphBBoxesBarlineSingle.bBoxSW);
 final SheetNoteSymbol trebleClef //  i.e. gClef
     = SheetNoteSymbol.glyphBBoxesFixed('trebleClef', '\uE050', GlyphBBoxesGClef.bBoxNE, GlyphBBoxesGClef.bBoxSW, 3);
 final SheetNoteSymbol bassClef //  i.e. fClef
