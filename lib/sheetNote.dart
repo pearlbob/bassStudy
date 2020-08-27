@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:bsteeleMusicLib/appLogger.dart';
 import 'package:bsteeleMusicLib/songs/chord.dart';
+import 'package:bsteeleMusicLib/songs/pitch.dart';
+import 'package:bsteeleMusicLib/songs/musicConstants.dart';
 
 import 'sheetMusicFontParameters.dart';
 
@@ -28,6 +31,8 @@ class SheetNoteSymbol {
 
   get fontSizeStaffs => _fontSizeStaffs;
   double _fontSizeStaffs = 4;
+
+  get width => _bounds.width;
 
   get bounds => _bounds;
   Rect _bounds;
@@ -89,6 +94,10 @@ final SheetNoteSymbol trebleClef //  i.e. gClef
 final SheetNoteSymbol bassClef //  i.e. fClef
     = SheetNoteSymbol.glyphBBoxesFixed('bassClef', '\uE062', GlyphBBoxesFClef.bBoxNE, GlyphBBoxesFClef.bBoxSW, 1.1);
 
+enum Accidental {
+  sharp, flat, natural,
+}
+
 //  accidentals
 final SheetNoteSymbol accidentalFlat = SheetNoteSymbol.glyphBBoxes(
     'accidentalFlat', '\uE260', GlyphBBoxesAccidentalFlat.bBoxNE, GlyphBBoxesAccidentalFlat.bBoxSW);
@@ -123,32 +132,114 @@ final SheetNoteSymbol timeSig9 =
 final SheetNoteSymbol timeSigCommon = SheetNoteSymbol.glyphBBoxes(
     'timeSigCommon', '\uE08A', GlyphBBoxesTimeSigCommon.bBoxNE, GlyphBBoxesTimeSigCommon.bBoxSW);
 
-enum ClefEnum {
-  treble,
-  bass,
-}
-
-enum InstrumentEnum {
-  guitar,
-  bass,
-  piano,
-}
-
 class SheetNote {
-  bool isNote; //  or a rest
+  SheetNote.note(this._pitch, this._noteDuration, {bool dotted, bool tied, Chord chord, String lyrics, Clef clef})
+      : _isNote = true,
+        _lyrics = lyrics,
+        _clef = clef,
+        _dotted = dotted,
+        _chord = chord,
+        _tied = tied {
+    if (_clef == null) {
+      //  put the note on the clef based on pitch
+      _clef = pitch.compareTo(Pitch.get(PitchEnum.C3)) < 0 ? Clef.bass : Clef.treble;
+    }
+    //  find note symbol by value, in units of measure
+    if (_noteDuration == 1)
+      _symbol = noteWhole;
+    else if (_noteDuration == 1 / 2 + 1 / 4) {
+      _symbol = isUpNote() ? noteHalfUp : noteHalfDown;
+      _dotted = true;
+    } else if (_noteDuration == 1 / 2)
+      _symbol = isUpNote() ? noteHalfUp : noteHalfDown;
+    else if (_noteDuration == 1 / 4 + 1 / 8) {
+      _symbol = isUpNote() ? noteQuarterUp : noteQuarterDown;
+      _dotted = true;
+    } else if (_noteDuration == 1 / 4)
+      _symbol = isUpNote() ? noteQuarterUp : noteQuarterDown;
+    else if (_noteDuration == 1 / 8 + 1 / 16) {
+      _symbol = isUpNote() ? note8thUp : note8thDown;
+      _dotted = true;
+    } else if (_noteDuration == 1 / 8)
+      _symbol = isUpNote() ? note8thUp : note8thDown;
+    else if (_noteDuration == 1 / 16)
+      _symbol = isUpNote() ? note16thUp : note16thDown;
+    else
+      logger.w('note duration is not legal: $_noteDuration');
+  }
+
+  SheetNote.rest(this._noteDuration, {String lyrics, Clef clef})
+      : _isNote = false,
+        _lyrics = lyrics,
+        _clef = clef {
+    if (_clef == null) {
+      _clef = Clef.bass;
+    }
+    //  find rest symbol by value, in units of measure
+    if (_noteDuration == 1)
+      _symbol = restWhole;
+    else if (_noteDuration == 1 / 2)
+      _symbol = restHalf;
+    else if (_noteDuration == 1 / 4)
+      _symbol = restQuarter;
+    else if (_noteDuration == 1 / 8)
+      _symbol = rest8th;
+    else if (_noteDuration == 1 / 16)
+      _symbol = rest16th;
+    else
+      logger.w('rest duration is not legal: $_noteDuration');
+  }
+
+  @override
+  String toString() {
+    if (_isNote)
+      return 'note: $pitch for ${_noteDuration.toStringAsFixed(4)}'
+            ' ${_symbol._name} on $clef'
+          ;
+    else //  rest
+      return 'rest: for ${_noteDuration.toStringAsFixed(4)} m'
+              ' ${_symbol._name} on $clef'
+          ;
+  }
+
+
+  bool isUpNote() {
+    if (isRest) return true;
+    if (_clef == Clef.treble) return _pitch.number <= trebleUpNumber;
+    //  else bassClef
+    return _pitch.number <= bassUpNumber;
+  }
+  static final trebleUpNumber = Pitch.get(PitchEnum.B4).number;
+  static final bassUpNumber = Pitch.get(PitchEnum.D2).number;
+
+  get isNote => _isNote;
+  bool _isNote; //  otherwise a rest
   bool get isRest => !isNote;
-  InstrumentEnum instrument;
 
-  int stringNumber; //  guitar, bass
-  int fret;
+  get clef => _clef;
+  Clef _clef;
 
-  double noteDuration;
-  Chord chord;
+  get pitch => _pitch;
+  Pitch _pitch;
 
-  String lyrics;
-  bool tied;
+  get noteDuration => _noteDuration;
+  double _noteDuration;
+
+  get dotted => _dotted;
+  bool _dotted = false;
+
+  get tied => _tied;
+  bool _tied = false;
+
+  get chord => _chord;
+  Chord _chord; //  member of
+
+  get lyrics => _lyrics;
+  String _lyrics;
+
   int line;
-  int m; //  ????
+  int measure; //  ????
 
-  SheetNoteSymbol symbol;
+  get symbol => _symbol;
+  SheetNoteSymbol _symbol;
 }
