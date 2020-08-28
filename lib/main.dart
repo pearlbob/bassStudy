@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
+import 'package:bsteeleMusicLib/songs/pitch.dart';
+import 'package:bsteeleMusicLib/songs/scaleNote.dart';
+import 'package:flutter/rendering.dart';
 import 'package:logger/logger.dart';
 
 import 'package:bassStudy/readJson.dart';
@@ -155,15 +158,15 @@ class _PlotPainter extends CustomPainter {
     _yOff = 2 * staffSpace;
     _yOffTreble = _yOff + staffMargin * staffSpace;
     _yOffBass = _yOffTreble + (staffGaps + 2 * staffMargin) * staffSpace;
-    _xOffTreble = _xOffBass = 10;
+    _xSpaceAll(10);
 
     _renderSheetFixedYSymbol(Clef.treble, brace);
     _xSpaceAll(1.5 * staffSpace);
 
     _startClef(Clef.treble);
-    staff(size.width - _xOffTreble - 10, _yOffTreble);
+    renderStaff(size.width - _xOffTreble - 10, _yOffTreble);
     _startClef(Clef.bass);
-    staff(size.width - _xOffTreble - 10, _yOffBass);
+    renderStaff(size.width - _xOffTreble - 10, _yOffBass);
 
     _renderBarlineSingle();
 
@@ -367,7 +370,7 @@ class _PlotPainter extends CustomPainter {
   //  at bass locations
   List<double> keySharpLocations = /**/ [0, 1, 2.5, 0.5, 2, 3.5, 1.5, 3];
 
-  void staff(double width, double y) {
+  void renderStaff(double width, double y) {
     final black = Paint();
     black.color = Colors.black;
     black.style = PaintingStyle.stroke;
@@ -378,7 +381,7 @@ class _PlotPainter extends CustomPainter {
     }
   }
 
-  void stave(SheetNoteSymbol symbol, double staffPosition) {
+  void renderStaves(SheetNoteSymbol symbol, double staffPosition) {
     //  truncate to staff line height
     staffPosition = staffPosition.toInt().toDouble();
 
@@ -425,26 +428,49 @@ class _PlotPainter extends CustomPainter {
     _endClef();
   }
 
+  Accidental _accidentalFromPitch(Pitch pitch) {
+    if (pitch.isSharp) return Accidental.sharp;
+    if (pitch.isFlat) return Accidental.flat;
+    return Accidental.natural;
+  }
+  Accidental _accidentalFromScaleNote(ScaleNote scaleNote) {
+    if (scaleNote.isSharp) return Accidental.sharp;
+    if (scaleNote.isFlat) return Accidental.flat;
+    return Accidental.natural;
+  }
+
+  ///
   void _renderSheetNote(Clef clef, SheetNote sn) {
     _startClef(clef);
 
-    double staffPosition = musicalKey.Key.getStaffPosition(clef, sn.pitch);
-    Accidental accidental = _measureAccidentals[staffPosition];
-    if (sn.pitch.scaleNote.isSharp && (accidental == null || accidental != Accidental.sharp)) {
+    Pitch pitch = _key.mappedPitch(sn.pitch);
+    ScaleNote mappedScaleNote  = _key.getMajorScaleByNote(sn.pitch.cScaleNumber);
+    double staffPosition = musicalKey.Key.getStaffPosition(clef, pitch);
+
+    logger.v('_measureAccidentals[$staffPosition]: ${_measureAccidentals[staffPosition]}');
+    logger.v('_key.getMajorScaleByNote(${pitch.cScaleNumber}): ${_key.getMajorScaleByNote(pitch.cScaleNumber)}');
+
+    Accidental accidental = _measureAccidentals[staffPosition] // prior notes in the measure
+        ??
+        _accidentalFromScaleNote(mappedScaleNote); //  from the key and mapped pitch
+
+    logger.i('sn.pitch: ${sn.pitch.toString().padLeft(3)}, pitch: ${pitch.toString().padLeft(3)}'
+        ', key: $_key, cScaleNumber: ${pitch.cScaleNumber}'
+            ', mappedScaleNote: $mappedScaleNote'
+        ', accidental: $accidental');
+    if (pitch.isSharp && accidental != Accidental.sharp) {
       _renderSheetNoteSymbol(accidentalSharp, staffPosition);
       _xSpace(_accidentalStaffSpace * staffSpace);
-      _measureAccidentals[staffPosition] = Accidental.sharp;
-    } else if (sn.pitch.scaleNote.isFlat && (accidental == null || accidental != Accidental.flat)) {
+    } else if (pitch.isFlat && accidental != Accidental.flat) {
       _renderSheetNoteSymbol(accidentalFlat, staffPosition);
       _xSpace(_accidentalStaffSpace * staffSpace);
-      _measureAccidentals[staffPosition] = Accidental.flat;
-    } else if (accidental != null) {
+    } else if (pitch.isNatural && accidental != Accidental.natural) {
       _renderSheetNoteSymbol(accidentalNatural, staffPosition);
       _xSpace(_accidentalStaffSpace * staffSpace);
-      _measureAccidentals[staffPosition] = null;
     }
+    _measureAccidentals[staffPosition] = _accidentalFromPitch(pitch);
+    logger.i('_measureAccidentals[$staffPosition] = ${_accidentalFromPitch(pitch)}');
     _renderSheetNoteSymbol(sn.symbol, staffPosition);
-    _endClef();
   }
 
   void _startClef(Clef clef) {
@@ -516,7 +542,7 @@ class _PlotPainter extends CustomPainter {
       ..paint(_canvas, Offset(_xOff + symbol.bounds.left, (_yOff ?? 0) + -2 * w + (staffPosition - 0.05) * staffSpace));
 
     if (isStave) {
-      stave(symbol, staffPosition);
+      renderStaves(symbol, staffPosition);
     }
 
     _xSpace(symbol.bounds.width * staffSpace);
@@ -659,15 +685,15 @@ class _PlotPainter extends CustomPainter {
   Map<double, Accidental> _measureAccidentals = {};
   Canvas _canvas;
   static const double _staffLineThickness = EngravingDefaults.staffLineThickness / 2; //  style basis only
-  static const double _accidentalStaffSpace = 0.2;
+  static const double _accidentalStaffSpace = 0.25;
   musicalKey.Key _key = musicalKey.Key.get(musicalKey.KeyEnum.C);
   Clef _clef; //  current clef
-  double _xOff;
-  double _yOff;
-  double _xOffTreble;
-  double _xOffBass;
-  double _yOffTreble;
-  double _yOffBass;
+  double _xOff = 0;
+  double _yOff = 0;
+  double _xOffTreble = 0;
+  double _xOffBass = 0;
+  double _yOffTreble = 0;
+  double _yOffBass = 0;
 }
 
 final _white = Paint()..color = Colors.white;
