@@ -422,8 +422,7 @@ class _PlotPainter extends CustomPainter {
     _xSpaceAll(width);
   }
 
-  void _renderSheetFixedY(Clef clef, SheetNote rest) {
-    _startClef(clef);
+  void _renderSheetFixedY(SheetNote rest) {
     _renderSheetNoteSymbol(rest.symbol, rest.symbol.fixedYOff, isStave: false);
     _endClef();
   }
@@ -433,43 +432,45 @@ class _PlotPainter extends CustomPainter {
     if (pitch.isFlat) return Accidental.flat;
     return Accidental.natural;
   }
-  Accidental _accidentalFromScaleNote(ScaleNote scaleNote) {
-    if (scaleNote.isSharp) return Accidental.sharp;
-    if (scaleNote.isFlat) return Accidental.flat;
-    return Accidental.natural;
-  }
 
   ///
-  void _renderSheetNote(Clef clef, SheetNote sn) {
-    _startClef(clef);
-
+  void _renderSheetNote(SheetNote sn) {
     Pitch pitch = _key.mappedPitch(sn.pitch);
-    ScaleNote mappedScaleNote  = _key.getMajorScaleByNote(sn.pitch.cScaleNumber);
-    double staffPosition = musicalKey.Key.getStaffPosition(clef, pitch);
+    double staffPosition = musicalKey.Key.getStaffPosition(_clef, pitch);
 
     logger.v('_measureAccidentals[$staffPosition]: ${_measureAccidentals[staffPosition]}');
-    logger.v('_key.getMajorScaleByNote(${pitch.cScaleNumber}): ${_key.getMajorScaleByNote(pitch.cScaleNumber)}');
+    logger.v('_key.getMajorScaleByNote(${pitch.scaleNumber}): ${_key.getMajorScaleByNote(pitch.scaleNumber)}');
 
-    Accidental accidental = _measureAccidentals[staffPosition] // prior notes in the measure
-        ??
-        _accidentalFromScaleNote(mappedScaleNote); //  from the key and mapped pitch
+    Accidental accidental = _measureAccidentals[staffPosition]; // prior notes in the measure
+    if (accidental != null) {
+      accidental = (pitch.accidental == accidental) ? null : pitch.accidental;
+    } else {
+      accidental = _key.accidental(pitch);
+    }
 
     logger.i('sn.pitch: ${sn.pitch.toString().padLeft(3)}, pitch: ${pitch.toString().padLeft(3)}'
-        ', key: $_key, cScaleNumber: ${pitch.cScaleNumber}'
-            ', mappedScaleNote: $mappedScaleNote'
+        ', key: $_key'
         ', accidental: $accidental');
-    if (pitch.isSharp && accidental != Accidental.sharp) {
-      _renderSheetNoteSymbol(accidentalSharp, staffPosition);
-      _xSpace(_accidentalStaffSpace * staffSpace);
-    } else if (pitch.isFlat && accidental != Accidental.flat) {
-      _renderSheetNoteSymbol(accidentalFlat, staffPosition);
-      _xSpace(_accidentalStaffSpace * staffSpace);
-    } else if (pitch.isNatural && accidental != Accidental.natural) {
-      _renderSheetNoteSymbol(accidentalNatural, staffPosition);
-      _xSpace(_accidentalStaffSpace * staffSpace);
+    if (accidental != null) {
+      switch (accidental) {
+        case Accidental.sharp:
+          _renderSheetNoteSymbol(accidentalSharp, staffPosition);
+          _xSpace(_accidentalStaffSpace * staffSpace);
+          break;
+        case Accidental.flat:
+          _renderSheetNoteSymbol(accidentalFlat, staffPosition);
+          _xSpace(_accidentalStaffSpace * staffSpace);
+          break;
+        case Accidental.natural:
+          _renderSheetNoteSymbol(accidentalNatural, staffPosition);
+          _xSpace(_accidentalStaffSpace * staffSpace);
+          break;
+      }
+      _measureAccidentals[staffPosition] = accidental;
     }
-    _measureAccidentals[staffPosition] = _accidentalFromPitch(pitch);
-    logger.i('_measureAccidentals[$staffPosition] = ${_accidentalFromPitch(pitch)}');
+
+    logger.i('_measureAccidentals[  $staffPosition  ] = ${_measureAccidentals[staffPosition]} ');
+
     _renderSheetNoteSymbol(sn.symbol, staffPosition);
   }
 
@@ -647,6 +648,7 @@ class _PlotPainter extends CustomPainter {
     double duration = 0;
     _clearMeasureAccidentals();
     for (SheetNote sn in sheetNotes) {
+      _startClef(Clef.bass); //  fixme: temp!!!!!!!!!!!!!!!!!!!!
       if (sn.isNote) {
         //  fixme: sharp/flat key designation
         //  fixme: sharp/flat notes based on key!!!
@@ -662,9 +664,9 @@ class _PlotPainter extends CustomPainter {
         //  fixme: align notes with their durations
         //  fixme: control line overflow
         //  fixme: staff selection (e.g. bass only, treble + bass, etc)
-        _renderSheetNote(Clef.bass, sn);
+        _renderSheetNote(sn);
       } else
-        _renderSheetFixedY(Clef.bass, sn);
+        _renderSheetFixedY(sn);
 
       _xSpace(1.25 * staffSpace);
 

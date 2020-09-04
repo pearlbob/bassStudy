@@ -94,9 +94,6 @@ final SheetNoteSymbol trebleClef //  i.e. gClef
 final SheetNoteSymbol bassClef //  i.e. fClef
     = SheetNoteSymbol.glyphBBoxesFixed('bassClef', '\uE062', GlyphBBoxesFClef.bBoxNE, GlyphBBoxesFClef.bBoxSW, 1.1);
 
-enum Accidental {
-  sharp, flat, natural,
-}
 
 //  accidentals
 final SheetNoteSymbol accidentalFlat = SheetNoteSymbol.glyphBBoxes(
