@@ -4,6 +4,7 @@ import 'package:bassStudy/sheetNote.dart';
 import 'package:bsteeleMusicLib/appLogger.dart';
 import 'package:bsteeleMusicLib/songs/chordDescriptor.dart';
 import 'package:bsteeleMusicLib/songs/key.dart' as musicalKey;
+import 'package:bsteeleMusicLib/songs/musicConstants.dart';
 import 'package:bsteeleMusicLib/songs/pitch.dart';
 //import 'package:logger/logger.dart';
 
@@ -212,7 +213,7 @@ List<SheetNote> parseJsonBsstVerion0_0(String s) {
                     Pitch pitch = Pitch.get(PitchEnum.E1).offsetByHalfSteps(string * 5 + fret);
                     logger.v('    Pitch: $pitch  (string: $string, fret: $fret), $chordDescriptor');
 
-                    SheetNote sn = SheetNote.note(pitch, _noteDuration.duration, lyrics: lyrics, tied: tied);
+                    SheetNote sn = SheetNote.note(pitch, _noteDuration.duration, lyrics: lyrics, tied: tied, clef: Clef.bass );
                     sheetNotes.add(sn);
                   } else {
                     //  rest

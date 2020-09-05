@@ -94,7 +94,6 @@ final SheetNoteSymbol trebleClef //  i.e. gClef
 final SheetNoteSymbol bassClef //  i.e. fClef
     = SheetNoteSymbol.glyphBBoxesFixed('bassClef', '\uE062', GlyphBBoxesFClef.bBoxNE, GlyphBBoxesFClef.bBoxSW, 1.1);
 
-
 //  accidentals
 final SheetNoteSymbol accidentalFlat = SheetNoteSymbol.glyphBBoxes(
     'accidentalFlat', '\uE260', GlyphBBoxesAccidentalFlat.bBoxNE, GlyphBBoxesAccidentalFlat.bBoxSW);
@@ -141,6 +140,7 @@ class SheetNote {
       //  put the note on the clef based on pitch
       _clef = pitch.compareTo(Pitch.get(PitchEnum.C3)) < 0 ? Clef.bass : Clef.treble;
     }
+
     //  find note symbol by value, in units of measure
     if (_noteDuration == 1)
       _symbol = noteWhole;
@@ -191,21 +191,19 @@ class SheetNote {
   String toString() {
     if (_isNote)
       return 'note: $pitch for ${_noteDuration.toStringAsFixed(4)}'
-            ' ${_symbol._name} on $clef'
-          ;
+          ' ${_symbol._name} on $clef';
     else //  rest
       return 'rest: for ${_noteDuration.toStringAsFixed(4)} m'
-              ' ${_symbol._name} on $clef'
-          ;
+          ' ${_symbol._name} on $clef';
   }
-
 
   bool isUpNote() {
     if (isRest) return true;
-    if (_clef == Clef.treble) return _pitch.number <= trebleUpNumber;
+    if (_clef == Clef.treble) return _pitch.number < trebleUpNumber;
     //  else bassClef
-    return _pitch.number <= bassUpNumber;
+    return _pitch.number < bassUpNumber;
   }
+
   static final trebleUpNumber = Pitch.get(PitchEnum.B4).number;
   static final bassUpNumber = Pitch.get(PitchEnum.D2).number;
 

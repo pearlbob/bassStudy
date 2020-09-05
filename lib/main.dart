@@ -441,14 +441,19 @@ class _PlotPainter extends CustomPainter {
     logger.v('_measureAccidentals[$staffPosition]: ${_measureAccidentals[staffPosition]}');
     logger.v('_key.getMajorScaleByNote(${pitch.scaleNumber}): ${_key.getMajorScaleByNote(pitch.scaleNumber)}');
 
+    //  find if this staff position has had an accidental in this measure
     Accidental accidental = _measureAccidentals[staffPosition]; // prior notes in the measure
-    if (accidental != null) {
-      accidental = (pitch.accidental == accidental) ? null : pitch.accidental;
+        if (accidental != null) {
+      //  there was a prior note at this staff position
+      accidental = (pitch.accidental == accidental)
+          ? null //               do/show nothing if it's the same as a prior note
+          : pitch.accidental; //  insist on the pitch's accidental being shown
     } else {
-      accidental = _key.accidental(pitch);
+      //  give the key an opportunity to call for an accidental if the pitch doesn't match the key's scale
+      accidental = _key.accidental(pitch);  //  this will be null on a pitch match to the key scale
     }
 
-    logger.i('sn.pitch: ${sn.pitch.toString().padLeft(3)}, pitch: ${pitch.toString().padLeft(3)}'
+    logger.v('sn.pitch: ${sn.pitch.toString().padLeft(3)}, pitch: ${pitch.toString().padLeft(3)}'
         ', key: $_key'
         ', accidental: $accidental');
     if (accidental != null) {
@@ -466,10 +471,12 @@ class _PlotPainter extends CustomPainter {
           _xSpace(_accidentalStaffSpace * staffSpace);
           break;
       }
+
+      //  remember the prior accidental for this staff position for this measure
       _measureAccidentals[staffPosition] = accidental;
     }
 
-    logger.i('_measureAccidentals[  $staffPosition  ] = ${_measureAccidentals[staffPosition]} ');
+    logger.d('_measureAccidentals[  $staffPosition  ] = ${_measureAccidentals[staffPosition]} ');
 
     _renderSheetNoteSymbol(sn.symbol, staffPosition);
   }
@@ -612,18 +619,28 @@ class _PlotPainter extends CustomPainter {
 {"isNote":true,"string":1,"fret":7,"noteDuration":3,"chordN":12,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":1,"lyrics":"","tied":false},
 {"isNote":true,"string":0,"fret":0,"noteDuration":3,"chordN":0,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":1,"lyrics":"","tied":false},
 {"isNote":true,"string":0,"fret":1,"noteDuration":3,"chordN":1,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":1,"lyrics":"","tied":false},
+{"isNote":true,"string":0,"fret":2,"noteDuration":3,"chordN":1,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
+{"isNote":true,"string":0,"fret":3,"noteDuration":3,"chordN":1,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":-2,"lyrics":"","tied":false},
 {"isNote":true,"string":0,"fret":4,"noteDuration":3,"chordN":4,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":1,"lyrics":"","tied":false},
 {"isNote":true,"string":0,"fret":5,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":1,"lyrics":"","tied":false},
 {"isNote":true,"string":0,"fret":6,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
 {"isNote":true,"string":0,"fret":7,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":-2,"lyrics":"","tied":false},
+{"isNote":true,"string":1,"fret":3,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
 {"isNote":true,"string":1,"fret":4,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":3,"lyrics":"","tied":false},
 {"isNote":true,"string":1,"fret":5,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":-4,"lyrics":"","tied":false},
+{"isNote":true,"string":1,"fret":6,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
 {"isNote":true,"string":1,"fret":7,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":5,"lyrics":"","tied":false},
+{"isNote":true,"string":2,"fret":3,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
 {"isNote":true,"string":2,"fret":4,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":-6,"lyrics":"","tied":false},
+{"isNote":true,"string":3,"fret":0,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
 {"isNote":true,"string":2,"fret":6,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":-7,"lyrics":"","tied":false},
 {"isNote":true,"string":2,"fret":7,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":1,"lyrics":"","tied":false},
-{"isNote":false,"noteDuration":1}
-]}
+{"isNote":true,"string":3,"fret":3,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
+{"isNote":true,"string":3,"fret":4,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":-2,"lyrics":"","tied":false},
+{"isNote":true,"string":3,"fret":5,"noteDuration":3,"chordN":5,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
+{"isNote":true,"string":3,"fret":6,"noteDuration":3,"chordN":8,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":0,"lyrics":"","tied":false},
+{"isNote":true,"string":3,"fret":7,"noteDuration":3,"chordN":8,"chordModifier":"","minorMajor":"major","minorMajorSelectIndex":0,"scaleN":-2,"lyrics":"","tied":false},
+{"isNote":false,"noteDuration":3}]}
     """;
     logger.d('debugging:');
     List<SheetNote> sheetNotes = parseJsonBsstVerion0_0(songAsJsonString);
@@ -648,14 +665,10 @@ class _PlotPainter extends CustomPainter {
     double duration = 0;
     _clearMeasureAccidentals();
     for (SheetNote sn in sheetNotes) {
-      _startClef(Clef.bass); //  fixme: temp!!!!!!!!!!!!!!!!!!!!
+
+      _startClef(sn.clef);
       if (sn.isNote) {
-        //  fixme: sharp/flat key designation
-        //  fixme: sharp/flat notes based on key!!!
-        //  fixme: default sharp/flat notes based on key within the measure (i.e. don't sharp a sharp from the key)
         //  fixme: pitch to trebleClef location
-        //  fixme: sharp/flat/natural prefix according to key
-        //  fixme: avoid sharp/flat/natural prefix within the single measure
         //  fixme: dotted
         //  fixme: tied
         //  fixme: beamed
@@ -665,8 +678,9 @@ class _PlotPainter extends CustomPainter {
         //  fixme: control line overflow
         //  fixme: staff selection (e.g. bass only, treble + bass, etc)
         _renderSheetNote(sn);
-      } else
+      } else {
         _renderSheetFixedY(sn);
+      }
 
       _xSpace(1.25 * staffSpace);
 
